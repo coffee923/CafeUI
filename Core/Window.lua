@@ -11,6 +11,7 @@ function Window.new(config)
 	self.Title = config.Title or "CafeUI"
 	self.Icon = config.Icon
 	self.Theme = Theme:Get(config.Theme or "Coffee")
+	self.Tabs = {}
 
 	self.ScreenGui = Utility:Create("ScreenGui", {
 		Name = "CafeUI",
@@ -31,7 +32,11 @@ function Window.new(config)
 	self.Main.Parent = self.ScreenGui
 
 	Utility:AddCorner(self.Main, 12)
-	Utility:AddStroke(self.Main, self.Theme.Accent, 0.4)
+	Utility:AddStroke(
+		self.Main,
+		self.Theme.Accent,
+		0.5
+	)
 
 	self.Top = Utility:Create("Frame", {
 		Size = UDim2.new(1, 0, 0, 40),
@@ -56,12 +61,21 @@ function Window.new(config)
 	self.Maximize = self:CreateControl("+", 45)
 	self.Close = self:CreateControl("x", 10)
 
+	self.Close.MouseButton1Click:Connect(function()
+		self:Destroy()
+	end)
+
+	self.Minimize.MouseButton1Click:Connect(function()
+		self:MinimizeWindow()
+	end)
+
 	Utility:MakeDraggable(self.Main, self.Top)
 
 	Animation:FadeIn(self.Main)
 
 	return self
 end
+
 
 function Window:CreateControl(text, x)
 	local button = Utility:Create("TextButton", {
@@ -78,12 +92,33 @@ function Window:CreateControl(text, x)
 	return button
 end
 
+
+function Window:CreateTab(name)
+	local Tab = require(script.Parent.Parent.Layout.Tab)
+
+	local tab = Tab.new(self, name)
+
+	table.insert(self.Tabs, tab)
+
+	return tab
+end
+
+
+function Window:Notify(config)
+	local Notification = require(script.Parent.Parent.Components.Notification)
+
+	Notification:Create(self, config)
+end
+
+
 function Window:MinimizeWindow()
 	Animation:FadeOut(self.Main)
 end
 
-function Window:CloseWindow()
+
+function Window:Destroy()
 	self.ScreenGui:Destroy()
 end
+
 
 return Window
