@@ -8,9 +8,10 @@ function Section.new(tab, name)
 
 	self.Tab = tab
 	self.Name = name
+	self.Elements = {}
 
 	self.Frame = Utility:Create("Frame", {
-		Size = UDim2.new(1, 0, 0, 45),
+		Size = UDim2.new(1, -20, 0, 45),
 		BackgroundColor3 = tab.Window.Theme.Panel,
 		BackgroundTransparency = 0.25,
 		BorderSizePixel = 0
@@ -37,13 +38,41 @@ function Section.new(tab, name)
 
 	self.Title.Parent = self.Frame
 
-	self.Elements = {}
-
 	return self
 end
+
 
 function Section:Add(element)
 	table.insert(self.Elements, element)
 end
+
+
+function Section:CreateButton(config)
+	local Button = require(script.Parent.Parent.Components.Button)
+
+	return Button.new(self, config)
+end
+
+
+function Section:CreateToggle(config)
+	local Toggle = require(script.Parent.Parent.Components.Toggle)
+
+	return Toggle.new(self, config)
+end
+
+
+function Section:CreateSlider(config)
+	local Slider = require(script.Parent.Parent.Components.Slider)
+
+	return Slider.new(self, config)
+end
+
+
+function Section:CreateDropdown(config)
+	local Dropdown = require(script.Parent.Parent.Components.Dropdown)
+
+	return Dropdown.new(self, config)
+end
+
 
 return Section
