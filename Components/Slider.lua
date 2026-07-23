@@ -3,6 +3,8 @@ Slider.__index = Slider
 
 local Utility = require(script.Parent.Parent.Core.Utility)
 
+local UserInputService = game:GetService("UserInputService")
+
 function Slider.new(section, config)
 	local self = setmetatable({}, Slider)
 
@@ -14,7 +16,6 @@ function Slider.new(section, config)
 
 	self.Frame = Utility:Create("Frame", {
 		Size = UDim2.new(1, -20, 0, 55),
-		Position = UDim2.fromOffset(10, 0),
 		BackgroundColor3 = section.Tab.Window.Theme.Panel,
 		BackgroundTransparency = 0.25,
 		BorderSizePixel = 0
@@ -49,8 +50,71 @@ function Slider.new(section, config)
 	})
 
 	self.Bar.Parent = self.Frame
-
 	Utility:AddCorner(self.Bar, 10)
+
+	self.Knob = Utility:Create("Frame", {
+		Size = UDim2.fromOffset(16, 16),
+		Position = UDim2.new(0, 0, 0.5, -8),
+		BackgroundColor3 = section.Tab.Window.Theme.Text,
+		BorderSizePixel = 0
+	})
+
+	self.Knob.Parent = self.Bar
+	Utility:AddCorner(self.Knob, 20)
+
+	self.Dragging = false
+
+	local function update(input)
+		local percent = math.clamp(
+			(input.Position.X - self.Bar.AbsolutePosition.X) / self.Bar.AbsoluteSize.X,
+			0,
+			1
+		)
+
+		self:Set(
+			math.floor(
+				self.Min + ((self.Max - self.Min) * percent)
+			)
+		)
+
+		self.Knob.Position = UDim2.new(
+			percent,
+			-8,
+			0.5,
+			-8
+		)
+	end
+
+	self.Knob.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1
+		or input.UserInputType == Enum.UserInputType.Touch then
+			self.Dragging = true
+		end
+	end)
+
+	self.Bar.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1
+		or input.UserInputType == Enum.UserInputType.Touch then
+			self.Dragging = true
+			update(input)
+		end
+	end)
+
+	UserInputService.InputChanged:Connect(function(input)
+		if self.Dragging and (
+			input.UserInputType == Enum.UserInputType.MouseMovement
+			or input.UserInputType == Enum.UserInputType.Touch
+		) then
+			update(input)
+		end
+	end)
+
+	UserInputService.InputEnded:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1
+		or input.UserInputType == Enum.UserInputType.Touch then
+			self.Dragging = false
+		end
+	end)
 
 	section:Add(self)
 
